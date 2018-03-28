@@ -1,4 +1,4 @@
-import "./ErrorCodes.sol";
+import "./common/ErrorCodes.sol";
 import "./ProjectState.sol";
 
 /*

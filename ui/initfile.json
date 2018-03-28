@@ -6,7 +6,7 @@
     },
     "bid": {
       "contractName": "Bid",
-        "contractFilename": "contracts/Bid.sol",
+        "contractFilename": "contracts/bid/contracts/Bid.sol",
         "args": {
           "_id": "1000000000",
           "_name": "ABC",
@@ -16,12 +16,12 @@
     },
     "bidState": {
       "contractName": "BidState",
-        "contractFilename": "contracts/BidState.sol",
+        "contractFilename": "contracts/bid/contracts/BidState.sol",
         "args": {}
     },
     "errorCodes": {
       "contractName": "ErrorCodes",
-        "contractFilename": "contracts/ErrorCodes.sol",
+        "contractFilename": "contracts/common/ErrorCodes.sol",
         "args": {}
     },
     "project": {
@@ -58,9 +58,9 @@
         "args": {
           "_account": "78fcb4b5c16e83d63866f0b82544cdf475710075",
           "_username": "ABC",
-          "_pwHash": "qiyh4XPJGsOZ2MEAyLkfWqeQ",
+          "_pwHash": "AA2CA1E173C91AC399D8C100C8B91F5AA7900000000000000000000000000000",
           "_id": "1000000000",
-          "_role": "ADMIN"
+          "_role": 2
         }
     },
     "userManager": {
@@ -75,12 +75,12 @@
     },
     "util": {
       "contractName": "Util",
-        "contractFilename": "contracts/Util.sol",
+        "contractFilename": "contracts/common/Util.sol",
         "args": {}
     },
     "version": {
       "contractName": "Version",
-        "contractFilename": "contracts/Version.sol",
+        "contractFilename": "contracts/common/Version.sol",
         "args": {}
     }
 }
