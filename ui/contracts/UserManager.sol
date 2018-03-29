@@ -1,7 +1,7 @@
 import "./User.sol";
 import "./UserRole.sol";
-import "./common/ErrorCodes.sol";
-import "./common/Util.sol";
+import "./ErrorCodes.sol";
+import "./Util.sol";
 
 /**
 * Interface for User data contracts

@@ -1,4 +1,4 @@
-import "../../common/ErrorCodes.sol";
+import "./ErrorCodes.sol";
 import "./BidState.sol";
 
 /**

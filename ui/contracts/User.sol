@@ -1,5 +1,5 @@
-import "./common/ErrorCodes.sol";
-import "./common/Version.sol";
+import "./ErrorCodes.sol";
+import "./Version.sol";
 import "./UserRole.sol";
 
 /**

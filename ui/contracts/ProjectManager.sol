@@ -1,10 +1,10 @@
 import "./Project.sol";
 import "./ProjectState.sol";
 import "./ProjectEvent.sol";
-import "./bid/contracts/Bid.sol";
-import "./bid/contracts/BidState.sol";
-import "./common/ErrorCodes.sol";
-import "./common/Util.sol";
+import "./Bid.sol";
+import "./BidState.sol";
+import "./ErrorCodes.sol";
+import "./Util.sol";
 
 /**
 * Interface for Project data contracts
