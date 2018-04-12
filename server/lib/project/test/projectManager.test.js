@@ -456,7 +456,7 @@ describe('ProjectManager Life Cycle tests', function() {
     assert.equal(filtered.length, 1, 'one and only one');
   });
 
-  it.skip('Accept a Bid (send funds into accepted bid), rejects the others, receive project, settle (send bid funds to supplier)', function* () {
+  it('Accept a Bid (send funds into accepted bid), rejects the others, receive project, settle (send bid funds to supplier)', function* () {
     const uid = util.uid();
     const projectArgs = createProjectArgs(uid);
     const password = '1234';
@@ -470,7 +470,7 @@ describe('ProjectManager Life Cycle tests', function() {
     const buyer = yield userManagerContract.createUser(buyerArgs);
     buyer.password = password; // IRL this will be a prompt to the buyer
     // create suppliers
-    const suppliers = yield createSuppliers(3, password, uid);
+    const suppliers = yield createSuppliers(1, password, uid);
 
     // create project
     const project = yield contract.createProject(projectArgs);
@@ -513,13 +513,83 @@ describe('ProjectManager Life Cycle tests', function() {
       if (supplier.username == acceptedBid.supplier) {
         // the winning supplier should have the bid amount minus the tx fee
         const delta = supplier.balance.minus(FAUCET_AWARD);
-        const fee = new BigNumber(10000000);
-        delta.should.be.bignumber.eq(amountWei.minus(fee));
+        delta.should.be.bignumber.eq(amountWei);
       } else {
         // everyone else should have the otiginal value
         supplier.balance.should.be.bignumber.eq(FAUCET_AWARD);
       }
     }
+    yield rest.getState(acceptedBid);
+  });
+
+  it.only('Accept a Bid (send funds into accepted bid), rejects the others, receive project, reject (send bid funds back to supplier)', function* () {
+    const uid = util.uid();
+    const projectArgs = createProjectArgs(uid);
+    const password = '1234';
+    const amount = 23;
+    const amountWei = new BigNumber(amount).times(constants.ETHER);
+    const FAUCET_AWARD = new BigNumber(1000).times(constants.ETHER) ;
+    const GAS_LIMIT = new BigNumber(100000000); // default in bockapps-rest
+
+    // create buyer and suppliers
+    const buyerArgs = createUserArgs(projectArgs.buyer, password, UserRole.BUYER);
+    const buyer = yield userManagerContract.createUser(buyerArgs);
+    buyer.password = password; // IRL this will be a prompt to the buyer
+    // create suppliers
+    const suppliers = yield createSuppliers(1, password, uid);
+
+    // create project
+    const project = yield contract.createProject(projectArgs);
+    // create bids
+    const createdBids = yield createMultipleBids(projectArgs.name, suppliers, amount);
+    { // test
+      const bids = yield projectManagerJs.getBidsByName(projectArgs.name);
+      assert.equal(createdBids.length, bids.length, 'should find all the created bids');
+    }
+    // get the buyers balance before accepting a bid
+    buyer.initialBalance = yield userManagerContract.getBalance(buyer.username);
+    buyer.initialBalance.should.be.bignumber.eq(FAUCET_AWARD);
+    // accept one bid (the first)
+    const acceptedBid = createdBids[0];
+    yield contract.acceptBid(buyer, acceptedBid.id, projectArgs.name);
+    // get the buyers balance after accepting a bid
+    buyer.balance = yield userManagerContract.getBalance(buyer.username);
+    const delta = buyer.initialBalance.minus(buyer.balance);
+    delta.should.be.bignumber.gte(amountWei); // amount + fee
+    delta.should.be.bignumber.lte(amountWei.plus(GAS_LIMIT)); // amount + max fee (gas-limit)
+    // get the bids
+    const bids = yield projectManagerJs.getBidsByName(projectArgs.name);
+    // check that the expected bid is ACCEPTED and all others are REJECTED
+    bids.map(bid => {
+      if (bid.id === acceptedBid.id) {
+        assert.equal(parseInt(bid.state), BidState.ACCEPTED, 'bid should be ACCEPTED');
+      } else {
+        assert.equal(parseInt(bid.state), BidState.REJECTED, 'bid should be REJECTED');
+      };
+    });
+    // deliver the project
+    const projectState = yield contract.handleEvent(projectArgs.name, ProjectEvent.DELIVER);
+    assert.equal(projectState, ProjectState.INTRANSIT, 'delivered project should be INTRANSIT ');
+    // receive the project
+    yield rejectProject(projectArgs.name, buyer.username);
+
+    // get the suppliers balances
+    for (let supplier of suppliers) {
+      supplier.balance = yield userManagerContract.getBalance(supplier.username);
+      if (supplier.username == acceptedBid.supplier) {
+        // the winning supplier should NOT have the bid amount
+        const delta = supplier.balance.minus(FAUCET_AWARD);
+        delta.should.be.bignumber.eq(0);
+      } else {
+        // everyone else should have the original value
+        supplier.balance.should.be.bignumber.eq(FAUCET_AWARD);
+      }
+    }
+
+    //we're just saying up to 1 ether is used for gas fees for testing purposes. The actual amount of gas used will be much lower.
+    const expectedValueFloor = buyer.initialBalance.minus(constants.ETHER);
+    buyer.balance.should.be.bignumber.lte(buyer.initialBalance); //accounting for gas fees we should be less than our initial balance
+    buyer.balance.should.be.bignumber.gte(expectedValueFloor); //we should be larger though than if we had still had 23 eth locked in escrow
   });
 
   function* createSuppliers(count, password, uid) {
@@ -542,6 +612,17 @@ describe('ProjectManager Life Cycle tests', function() {
     const supplier = yield userManagerContract.getUser(bid.supplier);
     // Settle the project:  change state to RECEIVED and tell the bid to send the funds to the supplier
     yield contract.settleProject(projectName, supplier.account, bid.address);
+  }
+
+  // throws: ErrorCodes
+  function* rejectProject(projectName, buyerName) {
+    rest.verbose('rejectProject', projectName);
+    // get the accepted bid
+    const bid = yield projectManagerJs.getAcceptedBid(projectName);
+    // get the supplier for the accepted bid
+    const buyer = yield userManagerContract.getUser(buyerName);
+    // Settle the project: change state to REJECTED and send the funds back to the buyer
+    yield contract.rejectProject(projectName, bid.address, buyer.address);
   }
 
 });

@@ -23,10 +23,15 @@ export const STATES = {
     state: 'RECEIVED',
     icon: 'mood'
   },
+  5: {
+    state: 'REJECTED',
+    icon: 'mood_bad'
+  },
   OPEN: 1,
   PRODUCTION: 2,
   INTRANSIT: 3,
   RECEIVED: 4,
+  REJECTED: 5,
 }
 
 export const BID_STATES = {
@@ -38,4 +43,4 @@ export const BID_STATES = {
   REJECTED: 3,
 }
 
-export const PROJECT_EVENTS = ['NULL', 'Accepted', 'Shipped', 'Received']
+export const PROJECT_EVENTS = ['NULL', 'Accepted', 'Shipped', 'Received', 'Rejected']

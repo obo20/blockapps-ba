@@ -158,6 +158,18 @@ function* receiveProject(userManager, projectManager, projectName) {
   return result;
 }
 
+// receive project
+function* rejectProject(userManager, projectManager, projectName, buyerName) {
+    rest.verbose('dapp: rejectProject', projectName);
+    // get the accepted bid
+    const bid = yield projectManager.getAcceptedBid(projectName);
+    // get the buyer who created the project
+    const buyer = yield userManager.getUser(buyerName);
+    // Reject the project:  change state to REJECTED and send money back to the buyer
+    const result = yield projectManager.rejectProject(projectName, bid.address, buyer.account);
+    return result;
+}
+
 // handle project event
 function* handleEvent(userManager, projectManager, args) {
   const name = args.name;
@@ -166,6 +178,9 @@ function* handleEvent(userManager, projectManager, args) {
     switch(args.projectEvent) {
       case ProjectEvent.RECEIVE:
         return yield receiveProject(userManager, projectManager, args.projectName);
+
+      case ProjectEvent.REJECT:
+          return yield rejectProject(userManager, projectManager, args.projectName, args.username);
 
       case ProjectEvent.ACCEPT:
         return yield acceptBid(userManager, projectManager, args.username, args.password, args.bidId, args.projectName);

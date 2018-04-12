@@ -43,6 +43,7 @@ describe('Bid tests', function() {
     assert.equal(bid.name, name, 'name');
     assert.equal(bid.supplier, supplier, 'supplier');
     assert.equal(bid.amount, amount, 'amount');
+    assert.equal(bid.buyer, admin.address, 'buyer');
   });
 
   it('Search Contract', function* () {

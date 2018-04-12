@@ -45,11 +45,26 @@ contract Bid is ErrorCodes, BidState {
     if (this.balance < amount) {
       return ErrorCodes.INSUFFICIENT_BALANCE;
     }
-    uint fee = 10000000 wei; // supplier absorbs the fee
+    uint fee = 0 wei; // supplier absorbs the fee
     uint amountWei = amount * 1 ether;
 
     // transfer will throw
     supplierAddress.send(amountWei-fee);
+    return ErrorCodes.SUCCESS;
+  }
+
+  //this function rejects the order in transit and sends funds back to the buyer
+  //note, having anybody able to call this function is bad security practice, but is done for simplicity in this sample app
+  function reject(address buyerAddress) returns (ErrorCodes) {
+    // confirm balance, to return error
+    if (this.balance < amount) {
+      return ErrorCodes.INSUFFICIENT_BALANCE;
+    }
+
+    uint amountWei = amount * 1 ether;
+
+    // transfer will throw
+    buyerAddress.send(amountWei);
     return ErrorCodes.SUCCESS;
   }
 }

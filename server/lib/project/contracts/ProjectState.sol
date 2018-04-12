@@ -5,6 +5,7 @@ contract ProjectState {
         OPEN,
         PRODUCTION,
         INTRANSIT,
-        RECEIVED
+        RECEIVED,
+        REJECTED
     }
 }

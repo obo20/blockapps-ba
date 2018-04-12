@@ -58,6 +58,7 @@ class Project extends Component {
       if (this.isBuyer) {
 
         if (parseInt(project.state, 10) === STATES.INTRANSIT) {
+          //the 3 is a receive event and the 4 is a REJECT event (see ProjectEvent.sol)
           actions.push(
             <Button
               icon
@@ -67,7 +68,16 @@ class Project extends Component {
               key="mood"
             >
               mood
-              </Button>
+              </Button>,
+              <Button
+              icon
+              primary
+              onClick={(e) => this.handleProjectEventClick(e, project.name, 4)}
+              tooltipLabel="Mark as Rejected"
+              key="mood_bad"
+            >
+              mood_bad
+              </Button>,
           );
         }
       }
